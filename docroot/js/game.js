@@ -39,7 +39,7 @@ var loadState = {
 
   preload: function() {
     game.load.atlasJSONHash('llama', 'assets/llama.png', 'assets/llama.json');
-    game.load.atlasJSONHash('exit_point', 'assets/comet.png', 'assets/comet.json');
+    game.load.atlasJSONHash('exit_point', 'assets/priest.png', 'assets/priest.json');
 
     for(i = 0; i < things_to_avoid_register.length; i++) {
       game.load.atlasJSONHash(
@@ -51,7 +51,7 @@ var loadState = {
 
     game.load.audio('boom', ['assets/boom.ogg']);
     game.load.audio('llamageddon', ['assets/llamageddon.ogg']);
-    game.load.image('stone', 'assets/MayanStone.png');
+    game.load.image('stone', 'assets/mayanstone.png');
   },
 
   create: function() {
