@@ -20,8 +20,9 @@ var number_of_things = 4;
 var height_of_temple =  128;
 var height_of_maize = 64;
 var size_of_avoider = 64;
+var killed_sound;
 
-var intro_text = "You are deep in the highlands of central America - and you are responsible for your villages maize supply!\n\nYou must use your pointer to lead llamas to the temple to appease the gods!\n\nDon't bump into the stones!\n\nDon't take your time!\n\nSome llamas move faster than others!\n\nSACRIFICES MUST BE MADE!\n\nPress 'S' to start!";
+var intro_text = "Deep in the highlands of the Americas - you are responsible for your villages maize supply!\n\nYou must use your pointer to lead llamas to the temple to appease the gods!\n\nDon't bump into the stones!\n\nDon't take your time!\n\nSome llamas move faster than others!\n\nSACRIFICES MUST BE MADE!\n\nPress 'S' to start!";
 
 
 for (i = 1; i < number_of_things+1; i++) {
@@ -51,7 +52,11 @@ var loadState = {
 
     game.load.audio('boom', ['assets/boom.ogg']);
     game.load.audio('llamageddon', ['assets/llamageddon.ogg']);
+    game.load.audio('killed', ['assets/killed.ogg']);
     game.load.image('stone', 'assets/mayanstone.png');
+    game.load.image('bg', 'assets/main.png');
+    killed_sound = new Phaser.Sound(game,'killed',1,false);
+
   },
 
   create: function() {
@@ -64,6 +69,9 @@ var menuState = {
 
   create: function() {
 
+
+    game.add.image(0, 0, 'bg');
+
     text = game.add.text(game.world.centerX, game.world.centerY, intro_text);
     text.anchor.setTo(0.5);
 
@@ -72,8 +80,8 @@ var menuState = {
 
     //  x0, y0 - x1, y1
     grd = text.context.createLinearGradient(0, 0, 0, text.canvas.height);
-    grd.addColorStop(0, '#8ED6FF');   
-    grd.addColorStop(1, '#004CB3');
+    grd.addColorStop(0, '#ffd700');
+    grd.addColorStop(1, '#dd0000');   
     text.fill = grd;
 
     text.align = 'center';
@@ -96,26 +104,26 @@ var playState = {
 
   update: function() {
 
-    if (maize_count < 1) {
-      game.state.start('end');
-    }
-
-    //llama.rotation = game.physics.arcade.moveToPointer(llama, 60, game.input.activePointer, 500);
-    rotation = game.physics.arcade.moveToPointer(llama, 600, game.input.activePointer, llama_speed);
-
-    if (rotation > 2) {
-      llama.rotation = 3;
+    if (killed_sound.isPlaying) {
+      //do nothing
     }
     else {
-      llama.rotation = 0;
+      if (maize_count < 1) {
+        music.stop();
+        game.state.start('end');
+      }
+
+      game.physics.arcade.moveToPointer(llama, 600, game.input.activePointer, llama_speed);
+
+      game.physics.arcade.overlap(llama, exit_points_group, this.llama_hit_exit_point, null, this);
+
+      game.physics.arcade.overlap(llama, things_group, this.llama_hit_thing, null, this);
     }
-
-    game.physics.arcade.overlap(llama, exit_points_group, this.llama_hit_exit_point, null, this);
-
-    game.physics.arcade.overlap(llama, things_group, this.llama_hit_thing, null, this);
   },
 
   complete_level: function() {
+
+    killed_sound.play();
 
     //kill the llama
     llama.destroy();
@@ -139,6 +147,8 @@ var playState = {
 
   start_next_level: function() {
 
+    completing_level = false;
+
     //remove the exit points
     exit_points_group.destroy();
     exit_points_group = game.add.group();
@@ -159,11 +169,12 @@ var playState = {
 
     for (i = 0; i < number_of_exit_points; i++) {
       pos_x = (1024/(number_of_exit_points+1)) * (i+1);
-      exit_points_group.create(pos_x,0,'exit_point');
+      priest = exit_points_group.create(pos_x,32,'exit_point');
     }
 
-    llama = game.add.sprite(32, 800 - height_of_maize - 32 ,'llama');
-
+    llama = game.add.sprite(48, 800 - height_of_maize - 48 ,'llama');
+    var animate = llama.animations.add('animate');
+    llama.animations.play('animate', 2, true);
 
 
     llama_speed = random_range(min_llama_speed, max_llama_speed);
@@ -179,6 +190,7 @@ var playState = {
   },
 
   llama_hit_exit_point: function(llama, exit_point) {
+    exit_point.animations.play('animate', 2, true);
     this.complete_level();
   },
 
@@ -196,7 +208,6 @@ var playState = {
   add_maize: function() {
     maize_count = Math.min(maize_count+2, max_maize_count);
     this.draw_maize();
-    game.state.start('endState');
   },
 
   draw_maize: function() {
@@ -225,11 +236,11 @@ var playState = {
     things_group.enableBody = true;
     exit_points_group = game.add.group();
     exit_points_group.enableBody = true;
-    music = new Phaser.Sound(game,'llamageddon',0.75,true);
-    music.play();
     for (i = 0; i < 1024; i = i + 128) {
       game.add.image(i, 0, 'stone');
     }
+    music = new Phaser.Sound(game,'llamageddon',0.75,true);
+    music.play();
 
     this.start_next_level();
   },
@@ -240,10 +251,12 @@ var endState = {
 
   create: function() {
 
+    game.add.image(0, 0, 'bg');
+
     adjectives = ["an amazing", "a stunning", "a poor", "a terrible", "a pathetic", "a paltry", "a superb", "a wonderful"];
     adjective = adjectives[Math.floor((Math.random() * adjectives.length))];
 
-    text = game.add.text(game.world.centerX, game.world.centerY, "Congratulations!\nYou scored " + adjective + " " + score + " points\n\nPress 'S' to restart");
+    text = game.add.text(game.world.centerX, game.world.centerY, "Congratulations on your effort!\nYou scored " + adjective + " " + score + " points\n\nPress 'S' to restart");
     text.anchor.setTo(0.5);
 
     text.font = 'Arial';
@@ -251,8 +264,8 @@ var endState = {
 
     //  x0, y0 - x1, y1
     grd = text.context.createLinearGradient(0, 0, 0, text.canvas.height);
-    grd.addColorStop(0, '#8ED6FF');   
-    grd.addColorStop(1, '#004CB3');
+    grd.addColorStop(0, '#ffd700');
+    grd.addColorStop(1, '#dd0000');   
     text.fill = grd;
 
     text.align = 'center';
