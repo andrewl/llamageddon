@@ -22,7 +22,7 @@ var height_of_maize = 64;
 var size_of_avoider = 64;
 var killed_sound;
 
-var intro_text = "Deep in the highlands of the Americas - you are responsible for your villages maize supply!\n\nYou must use your pointer to lead llamas to the temple to appease the gods!\n\nDon't bump into the stones!\n\nDon't take your time!\n\nSome llamas move faster than others!\n\nSACRIFICES MUST BE MADE!\n\nPress 'S' to start!";
+var intro_text = "Deep in the highlands of the Americas - you are responsible for your villages maize supply!\n\nYou must use your pointer to lead llamas to\nthe priests at the temple to appease the gods!\n\nDon't bump into the stones!\n\nDon't take your time!\n\nThe number of priests differ per level\n\nSome llamas move faster than others!\n\nSACRIFICES MUST BE MADE!\n\nPress 'S' to start!";
 
 
 for (i = 1; i < number_of_things+1; i++) {
